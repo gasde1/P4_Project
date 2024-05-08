@@ -49,6 +49,7 @@ export class GameLogic {
         this.cameraMode = 1;
     }
     
+    //controls functions
     moveRight = () => {
         if (this.pause) {
             return;
@@ -97,21 +98,20 @@ export class GameLogic {
 
     // Initialize the particle system
     initializeParticles = () => {
-        // Number of particles
         const numParticles = 500;
         
-        // Create the geometry and position buffer for particles
+        //shape of particles
         const particleGeometry = new T.BufferGeometry();
         const positions = new Float32Array(numParticles * 3);
         this.particleVelocities = new Float32Array(numParticles * 3); // Store velocity for each particle
 
         for (let i = 0; i < numParticles; i++) {
-            // Initialize positions randomly around the origin
+            //random initial pos
             positions[i * 3] = (Math.random() - 0.5) * 2;
             positions[i * 3 + 1] = (Math.random() - 0.5) * 2;
             positions[i * 3 + 2] = (Math.random() - 0.5) * 2;
 
-            // Random velocity in each axis direction
+            //random velocityies
             this.particleVelocities[i * 3] = (Math.random() - 0.5) * 0.5;
             this.particleVelocities[i * 3 + 1] = (Math.random() - 0.5) * 0.5;
             this.particleVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.5;
@@ -119,34 +119,34 @@ export class GameLogic {
 
         particleGeometry.setAttribute('position', new T.BufferAttribute(positions, 3));
 
-        // Create a larger material for the particles
         const particleMaterial = new T.PointsMaterial({
             color: "black",
             size: 0.3 
         });
 
-        // Create the particle system object
+        //object for particles
         this.explosionParticles = new T.Points(particleGeometry, particleMaterial);
         this.explosionParticles.visible = false;
         this.scene.add(this.explosionParticles);
     }
 
-    // Trigger the explosion
+    //particle explosion trigger
     triggerExplosion = (position) => {
         this.explosionParticles.position.copy(position);
         this.explosionStart = Date.now(); // Start the explosion
         this.explosionParticles.visible = true;
     }
 
-    // Update the particles in the frame loop
+    //Used LLM to help with this part
+    //update particle positions
     updateParticles = () => {
         if (!this.explosionStart) return;
 
-        // Simulate outward movement of particles
+        //move outwards
         const positions = this.explosionParticles.geometry.attributes.position.array;
-        const scalingFactor = 0.3; // Adjust this scaling factor for particle movement speed
+        const scalingFactor = 0.3; //paricle speed
         for (let i = 0; i < positions.length / 3; i++) {
-            // Immediately apply velocity to the current position using the scaling factor
+            //velocity vectors of particles
             positions[i * 3] += this.particleVelocities[i * 3] * scalingFactor;
             positions[i * 3 + 1] += this.particleVelocities[i * 3 + 1] * scalingFactor;
             positions[i * 3 + 2] += this.particleVelocities[i * 3 + 2] * scalingFactor;
@@ -155,7 +155,7 @@ export class GameLogic {
         // Update positions
         this.explosionParticles.geometry.attributes.position.needsUpdate = true;
 
-        // Stop showing the particles after a short time (e.g., 3 seconds)
+        //dissapear after 3 seconds
         const elapsed = (Date.now() - this.explosionStart) / 1000;
         if (elapsed > 3) {
             this.explosionStart = null;
@@ -163,18 +163,15 @@ export class GameLogic {
         }
     }
 
-    // Reset particle positions and velocities
+    //reset positions for next colliiosin
     resetParticles = () => {
         const positions = this.explosionParticles.geometry.attributes.position.array;
-
-        // Re-initialize positions and velocities for each particle
         for (let i = 0; i < positions.length / 3; i++) {
-            // Reset positions to near origin
+
             positions[i * 3] = (Math.random() - 0.5) * 2;
             positions[i * 3 + 1] = (Math.random() - 0.5) * 2;
             positions[i * 3 + 2] = (Math.random() - 0.5) * 2;
 
-            // Reset random velocities
             this.particleVelocities[i * 3] = (Math.random() - 0.5) * 0.5;
             this.particleVelocities[i * 3 + 1] = (Math.random() - 0.5) * 0.5;
             this.particleVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.5;
@@ -194,29 +191,32 @@ export class GameLogic {
         }
     }
 
+
+    //check if there is a cooliision based on box of hammer and car (player)
     checkForCollision = () => {
 
         const bBox1 = new T.Box3().setFromObject(this.player);
         const bBox2 = new T.Box3().setFromObject(this.hammer);
 
         const intersection = bBox1.intersectsBox(bBox2);
-
         if (!intersection) {
             return;
         }
+        this.crashed = true;   //set crashed status
         this.pauseGame();
-        this.crashed = true;
     }
 
     reset = () => {
+        this.incrementedPosition.z = 0;
         this.accelaratedDelta = 0;
+        this.pauseGame();
         this.framedelta = 0;
         this.player.position.copy(this.startingPoint);
-        this.pauseGame();
         this.wheelDirection = 0;
-        this.incrementedPosition.z = 0;
     }
 
+
+    //functions for pausing and playing game
     pauseGame = () => {
         this.pause = true;
     }
@@ -229,7 +229,7 @@ export class GameLogic {
         this.collision_mode = mode;
     }
 
-
+    //change camera
     cameraController = () => {
         // First-person camera mode
         if (this.cameraMode === 1 && this.player) {
@@ -246,8 +246,8 @@ export class GameLogic {
         this.player.rotation.z = -Math.cos(this.wheelDirection) * 0.25 + 0.1;
     }
 
+    //like animation loop but moved to game logic
     frameLoop = (timeStep) => {
-
         this.cameraController()
         this.wheelController()
 
@@ -287,7 +287,6 @@ export class GameLogic {
 
         //update particles for animation
         this.updateParticles();
-
 
         //don't do anything if the game is pasued
         if (this.pause) {
