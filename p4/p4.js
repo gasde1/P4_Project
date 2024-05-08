@@ -13,6 +13,8 @@ function version1() {
 
     document.getElementById("button_area").appendChild(renderer.domElement);
     document.body.appendChild(renderer.domElement);
+    renderer.domElement.id = "canvas";
+
 
     const scene = new T.Scene();
 

@@ -1,0 +1,14 @@
+How to access:
+https://gasde1.github.io/P4_Project/p4/p4.html
+
+How to interact:
+Use the slider to control the hammer speed, left slower right faster
+
+There are 2 buttons for cameras, 1 for orbital view and the other for the car view
+
+There are 2 different types of collisions, a normal collision that sends the car off into the void
+and another that generates an explosions using a random particle effect
+
+Use keyboard controls 'a' and 'd' to move left and right.  Use 'w' to speed up and 's' to slow down
+
+I would have liked to add more with a curved ramp, but I spent all my time on P2
